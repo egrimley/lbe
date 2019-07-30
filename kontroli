@@ -1,0 +1,56 @@
+#!/usr/bin/perl
+
+use strict;
+
+my @x0;
+while (<>) {
+    die unless s/\n$//;
+    die if /\s$/;
+    die if /\t/;
+    next if /^#/;
+    die if /  /;
+
+    my @x = split(/ /, $_);
+    die if $#x < 7;
+
+    die unless $x[0] =~ /^[1-9][0-9]*[abj]?$/;
+    die unless $x[1] =~ /^(19|20)[0-9]{2}$/;
+    die unless $x[2] =~ /^(0[1-9]|1[012])$/;
+    die unless $x[3] =~ /^(0[1-9]|1[012])$/;
+    die unless $x[4] =~ /^(0|[1-9][0-9]*(-[1-9][0-9]*)?)$/;
+    die unless $x[5] =~ /^[1-9][0-9]*$/;
+    die unless ",$x[6]" =~ /^(,(\([1-9][0-9]*\)|[1-9][0-9]*-[1-9][0-9]*))*$/;
+    die unless $x[7] =~ /./;
+
+    die if $x[3] lt $x[2];
+    if ($x[4] ne '0') {
+        my ($a, $b) = ($x[0], $x[4]);
+        $a =~ s/[^0-9]$//;
+        $b =~ s/-.*//;
+        die unless $a eq $b;
+    }
+
+    if ($#x >= 6) {
+        my $k = 0;
+        foreach my $t (split(/,/, $x[6])) {
+            if ($t =~ /^\(([1-9][0-9]*)\)$/) {
+                $k += $1;
+            } elsif ($t =~ /^([1-9][0-9]*)-([1-9][0-9]*)$/) {
+                $k += $2 - $1 + 1;
+            } else {
+                die;
+            }
+        }
+        die unless $k == $x[5];
+    }
+
+    if (@x0) {
+        my ($a, $b) = ($x0[0], $x[0]);
+        my ($a1, $b1) = ($a, $b);
+        $a1 =~ s/[^0-9]$//;
+        $b1 =~ s/[^0-9]$//;
+        die unless $a1 < $b1 || ($a1 == $b1 && $a lt $b);
+        die if $x[1] < $x0[1];
+    }
+    @x0 = @x;
+}
